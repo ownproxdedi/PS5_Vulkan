@@ -99,7 +99,7 @@ cmp -s "$work/u_cpu_detect.patched.c" "$tree/$cpu_detect" ||
 # --------------------------------------------------
 
 VULKAN_UTIL="$tree/src/vulkan/util"
-VK_GENERATOR="$VULKAN_UTIL/vk_struct_type_cast_gen.py"
+VK_GENERATOR="$sdk/third_party/mesa-26.2.0/src/vulkan/util/vk_struct_type_cast_gen.py"
 VK_XML="$sdk/third_party/Vulkan-Headers/registry/vk.xml"
 VK_OUTPUT="$VULKAN_UTIL/vk_struct_type_cast.h"
 
