@@ -93,41 +93,47 @@ cmp -s "$work/u_cpu_detect.patched.c" "$tree/$cpu_detect" ||
     cp "$work/u_cpu_detect.patched.c" "$tree/$cpu_detect"
 
 
+
 # --------------------------------------------------
 # Generate Vulkan struct type cast header
 # --------------------------------------------------
 
 VULKAN_UTIL="$tree/src/vulkan/util"
-
 VK_GENERATOR="$VULKAN_UTIL/vk_struct_type_cast_gen.py"
+VK_XML="$sdk/third_party/Vulkan-Headers/registry/vk.xml"
+VK_OUTPUT="$VULKAN_UTIL/vk_struct_type_cast.h"
+
+echo "Checking Vulkan struct type cast generator..."
 
 if [[ ! -f "$VK_GENERATOR" ]]; then
-    echo "ERROR: Missing vk_struct_type_cast_gen.py"
+    echo "ERROR: Missing generator: $VK_GENERATOR" >&2
     exit 1
 fi
 
-# Locate the Vulkan API registry XML
-VK_XML="$(find "$tree" -type f -path '*/registry/vk.xml' -print -quit)"
-
-if [[ -z "$VK_XML" ]]; then
-    echo "ERROR: Could not find Vulkan registry vk.xml"
+if [[ ! -f "$VK_XML" ]]; then
+    echo "ERROR: Missing Vulkan registry: $VK_XML" >&2
     exit 1
 fi
+
+echo "Vulkan generator: $VK_GENERATOR"
+echo "Vulkan registry:  $VK_XML"
+echo "Vulkan output:    $VK_OUTPUT"
 
 echo "Generating vk_struct_type_cast.h..."
 
 python3 "$VK_GENERATOR" \
     --xml "$VK_XML" \
-    --out "$VULKAN_UTIL/vk_struct_type_cast.h" \
+    --out "$VK_OUTPUT" \
     --beta false
 
-if [[ ! -s "$VULKAN_UTIL/vk_struct_type_cast.h" ]]; then
-    echo "ERROR: vk_struct_type_cast.h was not generated"
+if [[ ! -s "$VK_OUTPUT" ]]; then
+    echo "ERROR: vk_struct_type_cast.h was not generated" >&2
     exit 1
 fi
 
 echo "Generated Vulkan struct type cast header:"
-ls -lh "$VULKAN_UTIL/vk_struct_type_cast.h"
+ls -lh "$VK_OUTPUT"
+
 
 # Compute metadata: the pinned 0.2.0-era compiler kept ACO's rsrc1/rsrc2/rsrc3,
 # VGPR and SGPR counts and LDS size to itself and had to be patched to export
