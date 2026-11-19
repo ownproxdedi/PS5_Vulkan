@@ -92,6 +92,43 @@ fi
 cmp -s "$work/u_cpu_detect.patched.c" "$tree/$cpu_detect" ||
     cp "$work/u_cpu_detect.patched.c" "$tree/$cpu_detect"
 
+
+# --------------------------------------------------
+# Generate Vulkan struct type cast header
+# --------------------------------------------------
+
+VULKAN_UTIL="$tree/src/vulkan/util"
+
+VK_GENERATOR="$VULKAN_UTIL/vk_struct_type_cast_gen.py"
+
+if [[ ! -f "$VK_GENERATOR" ]]; then
+    echo "ERROR: Missing vk_struct_type_cast_gen.py"
+    exit 1
+fi
+
+# Locate the Vulkan API registry XML
+VK_XML="$(find "$tree" -type f -path '*/registry/vk.xml' -print -quit)"
+
+if [[ -z "$VK_XML" ]]; then
+    echo "ERROR: Could not find Vulkan registry vk.xml"
+    exit 1
+fi
+
+echo "Generating vk_struct_type_cast.h..."
+
+python3 "$VK_GENERATOR" \
+    --xml "$VK_XML" \
+    --out "$VULKAN_UTIL/vk_struct_type_cast.h" \
+    --beta false
+
+if [[ ! -s "$VULKAN_UTIL/vk_struct_type_cast.h" ]]; then
+    echo "ERROR: vk_struct_type_cast.h was not generated"
+    exit 1
+fi
+
+echo "Generated Vulkan struct type cast header:"
+ls -lh "$VULKAN_UTIL/vk_struct_type_cast.h"
+
 # Compute metadata: the pinned 0.2.0-era compiler kept ACO's rsrc1/rsrc2/rsrc3,
 # VGPR and SGPR counts and LDS size to itself and had to be patched to export
 # them. The 0.3.0 fork carries those fields itself -- PsbcShaderMetadata version
